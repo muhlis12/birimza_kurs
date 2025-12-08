@@ -343,6 +343,105 @@ def api_review_homework():
 
     return jsonify({"success": True})
 
+# -------------------------------------------------
+# TEACHER MOBILE API
+# -------------------------------------------------
+
+@app.route("/api/teacher_login", methods=["POST"])
+def api_teacher_login():
+    """
+    JSON body:
+    {
+      "username": "ogretmen1",
+      "password": "123456"
+    }
+    """
+    data = request.get_json() or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+
+    if not username or not password:
+        return jsonify({"success": False, "error": "Kullanıcı adı ve şifre zorunlu"}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username = ? AND role = 'teacher'", (username,))
+    user = cur.fetchone()
+    conn.close()
+
+    if not user:
+        return jsonify({"success": False, "error": "Öğretmen bulunamadı"}), 404
+
+    if not check_password_hash(user["password"], password):
+        return jsonify({"success": False, "error": "Şifre hatalı"}), 401
+
+    # Basit bir token gibi teacher_id dönüyoruz (şimdilik gerçek token yapmıyoruz)
+    return jsonify({
+        "success": True,
+        "teacher_id": user["id"],
+        "full_name": user["full_name"],
+        "username": user["username"]
+    })
+
+
+@app.route("/api/teacher_homeworks", methods=["GET"])
+def api_teacher_homeworks():
+    """
+    Öğretmen için ödev listesi
+    GET /api/teacher_homeworks?status=bekliyor
+
+    status:
+      - bekliyor
+      - kontrol_edildi
+      - eksik
+      - tum   (tüm kayıtlar)
+    """
+    status = request.args.get("status", "bekliyor")
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    base_query = """
+        SELECT
+            h.id,
+            h.subject,
+            h.status,
+            h.teacher_note,
+            h.image_path,
+            h.created_at,
+            s.name AS student_name,
+            p.name AS parent_name
+        FROM homeworks h
+        LEFT JOIN students s ON h.student_id = s.id
+        LEFT JOIN parents p ON h.parent_id = p.id
+    """
+
+    params = []
+    if status != "tum":
+        base_query += " WHERE h.status = ?"
+        params.append(status)
+
+    base_query += " ORDER BY h.id DESC"
+
+    cur.execute(base_query, params)
+    rows = cur.fetchall()
+    conn.close()
+
+    items = []
+    for r in rows:
+        items.append({
+            "id": r["id"],
+            "subject": r["subject"],
+            "status": r["status"],
+            "teacher_note": r["teacher_note"],
+            "image_path": r["image_path"],
+            "created_at": r["created_at"],
+            "student_name": r["student_name"],
+            "parent_name": r["parent_name"]
+        })
+
+    return jsonify({"success": True, "items": items})
+
 
 # -------------------------------------------------
 # MAIN (Render uyumlu)
