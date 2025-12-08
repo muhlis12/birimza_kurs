@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Bir İmza - Ödevler</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ url_for('dashboard') }}">Bir İmza Panel</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav" aria-controls="navbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <li class="nav-item me-2">
+          <a class="btn btn-sm btn-outline-light" href="{{ url_for('teachers_list') }}">
+            Öğretmenler
+          </a>
+        </li>
+        <li class="nav-item me-2">
+          <a class="btn btn-sm btn-light" href="{{ url_for('homeworks_list') }}">
+            Ödevler
+          </a>
+        </li>
+        <li class="nav-item me-3">
+          <span class="navbar-text text-white">
+            {{ session.full_name or session.username }}
+          </span>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-light">Çıkış</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} py-1 mb-2">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Ödev Listesi</h4>
+
+    <div class="d-flex">
+      <a href="{{ url_for('homeworks_add') }}" class="btn btn-sm btn-success me-2">
+        + Ödev Ekle
+      </a>
+
+      <form class="d-flex" method="get">
+        <select name="status" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+          <option value="gonderildi" {{ 'selected' if selected_status=='gonderildi' else '' }}>Bekleyen (Gönderildi)</option>
+          <option value="kontrol_edildi" {{ 'selected' if selected_status=='kontrol_edildi' else '' }}>Kontrol Edildi</option>
+          <option value="eksik" {{ 'selected' if selected_status=='eksik' else '' }}>Eksik</option>
+          <option value="tum" {{ 'selected' if selected_status=='tum' else '' }}>Tümü</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary">Filtrele</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <table class="table table-striped table-hover table-sm mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Öğrenci</th>
+            <th>Veli</th>
+            <th>Ders</th>
+            <th>Açıklama</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th style="width: 100px;">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for hw in homeworks %}
+          <tr>
+            <td>{{ hw.id }}</td>
+            <td>{{ hw.student_name }}</td>
+            <td>{{ hw.parent_name }}</td>
+            <td>{{ hw.subject or '-' }}</td>
+            <td>{{ hw.description or '-' }}</td>
+            <td>
+              {% if hw.status == 'gonderildi' %}
+                <span class="badge bg-warning text-dark">Bekliyor</span>
+              {% elif hw.status == 'kontrol_edildi' %}
+                <span class="badge bg-success">Kontrol Edildi</span>
+              {% elif hw.status == 'eksik' %}
+                <span class="badge bg-danger">Eksik</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ hw.status }}</span>
+              {% endif %}
+            </td>
+            <td>{{ hw.created_at }}</td>
+            <td>
+              <a href="{{ url_for('homework_detail', hw_id=hw.id) }}"
+                 class="btn btn-sm btn-primary">
+                İncele
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-3">Seçilen filtreye göre ödev bulunamadı.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
