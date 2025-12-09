@@ -89,7 +89,7 @@
             <td>{{ h.created_at or '' }}</td>
             <td>
               {% if h.image_path %}
-                <a href="{{ url_for('static', filename=h.image_path.replace('static/', '')) }}" target="_blank">
+                <a href="/{{ h.image_path }}" target="_blank">
                   Görüntüle
                 </a>
               {% else %}

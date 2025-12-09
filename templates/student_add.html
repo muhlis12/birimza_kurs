@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <title>Bir İmza - Öğrenci Ekle</title>
+  <title>Öğrenci Ekle - Bir İmza Panel</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -10,99 +10,32 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container-fluid">
     <a class="navbar-brand" href="{{ url_for('dashboard') }}">Bir İmza Panel</a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarNav" aria-controls="navbarNav"
-            aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav align-items-center">
-        <li class="nav-item me-2">
-          <a class="btn btn-sm btn-outline-light" href="{{ url_for('students_list') }}">
-            Öğrenciler
-          </a>
-        </li>
-        <li class="nav-item me-3">
-          <span class="navbar-text text-white">
-            {{ session.full_name or session.username }}
-          </span>
-        </li>
-        <li class="nav-item">
-          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-light">Çıkış</a>
-        </li>
-      </ul>
-    </div>
   </div>
 </nav>
 
 <div class="container py-4">
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, msg in messages %}
-        <div class="alert alert-{{ category }} py-1 mb-2">{{ msg }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+  <h4 class="mb-3">Yeni Öğrenci Ekle</h4>
 
-  <div class="row justify-content-center">
-    <div class="col-md-7">
-      <div class="card shadow-sm">
-        <div class="card-header">
-          <h5 class="mb-0">Yeni Öğrenci Ekle</h5>
-        </div>
-        <div class="card-body">
-
-          <form method="POST">
-
-            <h6 class="mb-2">Öğrenci Bilgileri</h6>
-            <div class="mb-3">
-              <label for="student_name" class="form-label">Öğrenci Adı Soyadı</label>
-              <input type="text" class="form-control" id="student_name" name="student_name" required>
-            </div>
-
-            <div class="mb-3">
-              <label for="school" class="form-label">Okul</label>
-              <input type="text" class="form-control" id="school" name="school">
-            </div>
-
-            <div class="mb-3">
-              <label for="grade" class="form-label">Sınıf</label>
-              <input type="text" class="form-control" id="grade" name="grade" placeholder="5. Sınıf, 8. Sınıf...">
-            </div>
-
-            <div class="mb-3">
-              <label for="address" class="form-label">Adres</label>
-              <textarea id="address" name="address" rows="2" class="form-control"></textarea>
-            </div>
-
-            <hr>
-
-            <h6 class="mb-2">Veli Bilgileri</h6>
-            <div class="mb-3">
-              <label for="parent_name" class="form-label">Veli Adı Soyadı</label>
-              <input type="text" class="form-control" id="parent_name" name="parent_name" required>
-            </div>
-
-            <div class="mb-3">
-              <label for="parent_phone" class="form-label">Veli Telefon</label>
-              <input type="text" class="form-control" id="parent_phone" name="parent_phone" placeholder="05xxxxxxxxx" required>
-              <div class="form-text">
-                Aynı telefon ile kayıtlı veli varsa, o veliye bağlı olarak öğrenci kaydedilir.
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Kaydet</button>
-            <a href="{{ url_for('students_list') }}" class="btn btn-secondary">İptal</a>
-
-          </form>
-
-        </div>
-      </div>
+  <form method="post">
+    <div class="mb-3">
+      <label class="form-label">Öğrenci Adı</label>
+      <input type="text" name="student_name" class="form-control" required>
     </div>
-  </div>
+
+    <div class="mb-3">
+      <label class="form-label">Veli Adı</label>
+      <input type="text" name="parent_name" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Veli Telefon</label>
+      <input type="text" name="parent_phone" class="form-control" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a href="{{ url_for('students_list') }}" class="btn btn-secondary">Geri</a>
+  </form>
 
 </div>
 
