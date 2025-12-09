@@ -5,6 +5,7 @@ from flask import (
     Flask, render_template, request, redirect,
     url_for, flash, session, jsonify
 )
+from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # -------------------------------------------------
@@ -12,6 +13,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # -------------------------------------------------
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+
+# Sadece /api/... endpointleri için CORS izni veriyoruz
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 DB_NAME = "bir_imza.db"
 
@@ -169,11 +173,13 @@ def dashboard():
 
     conn.close()
 
-    return render_template("dashboard.html",
-                           total_students=total_students,
-                           total_parents=total_parents,
-                           waiting_hw=waiting_hw,
-                           last_homeworks=last_homeworks)
+    return render_template(
+        "dashboard.html",
+        total_students=total_students,
+        total_parents=total_parents,
+        waiting_hw=waiting_hw,
+        last_homeworks=last_homeworks
+    )
 
 
 # -------------------------------------------------
@@ -249,8 +255,10 @@ def students_add():
         cur = conn.cursor()
 
         # add parent
-        cur.execute("INSERT INTO parents (name, phone) VALUES (?, ?)",
-                    (pname, phone))
+        cur.execute(
+            "INSERT INTO parents (name, phone) VALUES (?, ?)",
+            (pname, phone)
+        )
         parent_id = cur.lastrowid
 
         # add student
@@ -308,7 +316,13 @@ def homework_add():
         cur.execute("""
             INSERT INTO homeworks (student_id, parent_id, subject, image_path, created_at)
             VALUES (?, ?, ?, ?, ?)
-        """, (student_id, parent_id, subject, file_path, datetime.now().isoformat()))
+        """, (
+            student_id,
+            parent_id,
+            subject,
+            file_path,
+            datetime.now().isoformat()
+        ))
         conn.commit()
         conn.close()
 
@@ -343,10 +357,10 @@ def api_review_homework():
 
     return jsonify({"success": True})
 
+
 # -------------------------------------------------
 # TEACHER MOBILE API
 # -------------------------------------------------
-
 @app.route("/api/teacher_login", methods=["POST"])
 def api_teacher_login():
     """
@@ -361,21 +375,32 @@ def api_teacher_login():
     password = data.get("password", "")
 
     if not username or not password:
-        return jsonify({"success": False, "error": "Kullanıcı adı ve şifre zorunlu"}), 400
+        return jsonify({
+            "success": False,
+            "error": "Kullanıcı adı ve şifre zorunlu"
+        }), 400
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE username = ? AND role = 'teacher'", (username,))
+    cur.execute(
+        "SELECT * FROM users WHERE username = ? AND role = 'teacher'",
+        (username,)
+    )
     user = cur.fetchone()
     conn.close()
 
     if not user:
-        return jsonify({"success": False, "error": "Öğretmen bulunamadı"}), 404
+        return jsonify({
+            "success": False,
+            "error": "Öğretmen bulunamadı"
+        }), 404
 
     if not check_password_hash(user["password"], password):
-        return jsonify({"success": False, "error": "Şifre hatalı"}), 401
+        return jsonify({
+            "success": False,
+            "error": "Şifre hatalı"
+        }), 401
 
-    # Basit bir token gibi teacher_id dönüyoruz (şimdilik gerçek token yapmıyoruz)
     return jsonify({
         "success": True,
         "teacher_id": user["id"],
@@ -451,6 +476,6 @@ os.makedirs(os.path.join("static", "homework"), exist_ok=True)
 with app.app_context():
     init_db()
 
-# Sadece lokal kullanım
+# Lokal çalıştırmak istersen
 if __name__ == "__main__":
     app.run(debug=True)
