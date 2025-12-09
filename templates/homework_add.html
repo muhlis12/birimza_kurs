@@ -18,14 +18,25 @@
   <h4 class="mb-3">Yeni Ödev Ekle</h4>
 
   <form method="post" enctype="multipart/form-data">
+
     <div class="mb-3">
-      <label class="form-label">Öğrenci ID</label>
-      <input type="number" name="student_id" class="form-control" required>
+      <label class="form-label">Öğrenci</label>
+      <select name="student_id" class="form-select" required>
+        <option value="">Öğrenci seçin...</option>
+        {% for s in students %}
+          <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+      </select>
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Veli ID</label>
-      <input type="number" name="parent_id" class="form-control" required>
+      <label class="form-label">Veli</label>
+      <select name="parent_id" class="form-select" required>
+        <option value="">Veli seçin...</option>
+        {% for p in parents %}
+          <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+      </select>
     </div>
 
     <div class="mb-3">

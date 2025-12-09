@@ -299,6 +299,16 @@ def homeworks_list():
 
 @app.route("/homeworks/add", methods=["GET", "POST"])
 def homework_add():
+    conn = get_db()
+    cur = conn.cursor()
+
+    # Öğrenci ve velileri her iki durumda da lazım olacak
+    cur.execute("SELECT id, name FROM students ORDER BY name")
+    students = cur.fetchall()
+
+    cur.execute("SELECT id, name FROM parents ORDER BY name")
+    parents = cur.fetchall()
+
     if request.method == "POST":
         student_id = request.form["student_id"]
         parent_id = request.form["parent_id"]
@@ -311,8 +321,6 @@ def homework_add():
         file_path = f"{folder}/{datetime.now().timestamp()}_{image.filename}"
         image.save(file_path)
 
-        conn = get_db()
-        cur = conn.cursor()
         cur.execute("""
             INSERT INTO homeworks (student_id, parent_id, subject, image_path, created_at)
             VALUES (?, ?, ?, ?, ?)
@@ -329,7 +337,10 @@ def homework_add():
         flash("Ödev başarıyla yüklendi!", "success")
         return redirect(url_for("homeworks_list"))
 
-    return render_template("homework_add.html")
+    conn.close()
+    return render_template("homework_add.html",
+                           students=students,
+                           parents=parents)
 
 
 # -------------------------------------------------
